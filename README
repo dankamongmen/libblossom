@@ -1,0 +1,7 @@
+libblossom -- extremely parallel thread spawning
+
+Massively parallel programs can incur significant startup overhead due to
+the spawning of threads. Libblossom spawns threads, optionally restricting
+them to distinct processing elements, in a highly parallel fashion.
+Libblossom exports interfaces to create a fixed number of threads, or a
+fixed number per processing element.
