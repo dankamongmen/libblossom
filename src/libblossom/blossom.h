@@ -7,7 +7,8 @@ extern "C" {
 
 #include <pthread.h>
 
-int blossom_pthreads(pthread_t *,const pthread_attr_t *,void *(*)(void *),void *);
+int blossom_pthreads(pthread_t *,const pthread_attr_t *,void *(*)(void *),void *)
+	__attribute__ ((visibility ("default")));
 
 #ifdef __cplusplus
 }
