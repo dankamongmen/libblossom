@@ -7,7 +7,7 @@ SRC:=src
 PROJ:=blossom
 LIBBLOSSOM:=$(OUT)/lib$(PROJ).so
 
-CFLAGS+=-I$(SRC)
+CFLAGS+=-I$(SRC) -fvisibility=hidden -O2 -Wall
 
 all: lib bin
 
