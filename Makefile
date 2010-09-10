@@ -17,7 +17,7 @@ BIN_LFLAGS+=-L$(dir $(LIBBLOSSOM)) -l$(PROJ)
 LIB:=$(LIBBLOSSOM)
 BIN:=$(BLOSSOMTEST)
 
-CFLAGS+=-I$(SRC) -fvisibility=hidden -O2 -Wall
+CFLAGS+=-pthread -fpic -I$(SRC) -fvisibility=hidden -O2 -Wall
 
 all: lib bin
 
