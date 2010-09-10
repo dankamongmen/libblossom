@@ -20,6 +20,7 @@ bin: $(BIN)
 lib: $(LIB)
 
 test: all
+	for test in $(BIN) ; do ./$$test ; done
 
 $(OUT)/%: $(OUT)/%.o
 	@mkdir -p $(@D)
