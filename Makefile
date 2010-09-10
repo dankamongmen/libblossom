@@ -5,23 +5,31 @@
 OUT:=out
 SRC:=src
 PROJ:=blossom
-LIBBLOSSOM:=$(OUT)/lib$(PROJ).so
+LIBBLOSSOM:=$(OUT)/lib$(PROJ)/lib$(PROJ).so
+BLOSSOMTEST:=$(OUT)/$(PROJ)test/$(PROJ)test
+
+LIB:=$(LIBBLOSSOM)
+BIN:=$(BLOSSOMTEST)
 
 CFLAGS+=-I$(SRC) -fvisibility=hidden -O2 -Wall
 
 all: lib bin
 
-bin:
+bin: $(BIN)
 
-lib: $(LIBBLOSSOM)
+lib: $(LIB)
 
 test: all
 
-$(OUT)/lib%.so: $(OUT)/%.o
+$(OUT)/%: $(OUT)/%.o
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
+
+$(OUT)/libblossom/lib%.so: $(OUT)/libblossom/%.o
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LFLAGS)
 
-$(OUT)/%.o: $(SRC)/%.c $(wildcard $SRC/*.h)
+$(OUT)/%.o: $(SRC)/%.c $(wildcard $(SRC)/*.h)
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
