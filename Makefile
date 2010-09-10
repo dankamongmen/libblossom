@@ -29,7 +29,7 @@ lib: $(LIB)
 test: all
 	for test in $(BIN) ; do ./$$test ; done
 
-$(OUT)/%: $(OUT)/%.o
+$(OUT)/%: $(OUT)/%.o $(LIB)
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS) $(BIN_LFLAGS)
 
