@@ -8,6 +8,12 @@ PROJ:=blossom
 LIBBLOSSOM:=$(OUT)/lib$(PROJ)/lib$(PROJ).so
 BLOSSOMTEST:=$(OUT)/$(PROJ)test/$(PROJ)test
 
+# We intentionally use late binding for BIN_LFLAGS here, since realpath
+# fails unless the file exists, and thus can't be evaluated until after
+# the deps have been built...
+BIN_LFLAGS=-Wl,-R$(realpath $(dir $(LIBBLOSSOM)))
+BIN_LFLAGS+=-L$(dir $(LIBBLOSSOM)) -l$(PROJ)
+
 LIB:=$(LIBBLOSSOM)
 BIN:=$(BLOSSOMTEST)
 
@@ -24,7 +30,7 @@ test: all
 
 $(OUT)/%: $(OUT)/%.o
 	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS) $(BIN_LFLAGS)
 
 $(OUT)/libblossom/lib%.so: $(OUT)/libblossom/%.o
 	@mkdir -p $(@D)
