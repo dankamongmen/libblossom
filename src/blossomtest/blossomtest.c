@@ -4,9 +4,10 @@
 #include <libblossom/blossom.h>
 
 static pthread_t tids[1];
-static int tidcount = sizeof(tids) / sizeof(*tids);
+
 static blossom_state bloom = {
 	.tids = tids,
+	.tidcount = sizeof(tids) / sizeof(*tids),
 };
 
 static void *
@@ -23,7 +24,7 @@ int main(void){
 		fprintf(stderr,"blossom_pthreads returned %d\n",ret);
 		return EXIT_FAILURE;
 	}
-	for(z = 0 ; z < tidcount ; ++z){
+	for(z = 0 ; z < bloom.tidcount ; ++z){
 		void *arg;
 
 		if( (ret = pthread_join(tids[z],&arg)) ){
