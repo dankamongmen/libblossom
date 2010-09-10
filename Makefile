@@ -37,7 +37,7 @@ $(OUT)/libblossom/lib%.so: $(OUT)/libblossom/%.o
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LFLAGS)
 
-$(OUT)/%.o: $(SRC)/%.c $(wildcard $(SRC)/%.h)
+$(OUT)/%.o: $(SRC)/%.c $(wildcard $(SRC)/lib$(PROJ)/*.h)
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c -o $@ $<
 

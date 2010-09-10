@@ -5,6 +5,9 @@
 
 static pthread_t tids[1];
 static int tidcount = sizeof(tids) / sizeof(*tids);
+static blossom_state bloom = {
+	.tids = tids,
+};
 
 static void *
 fxn(void *v){
@@ -16,7 +19,7 @@ int main(void){
 	int ret,z;
 
 	printf("Testing libblossom...\n");
-	if( (ret = blossom_pthreads(tids,NULL,fxn,NULL)) ){
+	if( (ret = blossom_pthreads(&bloom,NULL,fxn,NULL)) ){
 		fprintf(stderr,"blossom_pthreads returned %d\n",ret);
 		return EXIT_FAILURE;
 	}
