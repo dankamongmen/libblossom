@@ -308,14 +308,12 @@ blossom_pe_thread(void *unsafeb){
 	struct pestruct *pe;
 	blossom *b = unsafeb;
 	void *(*fxn)(void *);
+	cpu_set_t mask;
 	void *arg;
-	int cpu,dcpu;
+	int dcpu;
 
 	pe = b->arg;
-	cpu = sched_getcpu();
 	dcpu = b->result;
-	cpu_set_t mask;
-
 	CPU_ZERO(&mask);
 	CPU_SET(pe->dcpu,&mask);
 #if defined(__freebsd__)
@@ -325,9 +323,6 @@ blossom_pe_thread(void *unsafeb){
 	if(sched_setaffinity(0,sizeof(mask),&mask)){
 #endif
 		RET_BLOOM_FAILURE;
-	}
-	if(cpu != dcpu){
-		printf("Moved from CPU %d to %d\n",cpu,dcpu);
 	}
 	fxn = b->fxn;
 	arg = pe->arg;
