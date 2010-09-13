@@ -16,7 +16,10 @@ static blossom_state bloom128 = {
 
 static void *
 argfxn(void *v){
-	printf("Argument: %p\n",v);
+	int cpu;
+
+	cpu = sched_getcpu();
+	printf("CPU: %u Argument: %p\n",cpu,v);
 	pthread_exit(v);
 }
 
