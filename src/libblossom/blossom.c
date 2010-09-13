@@ -1,6 +1,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <libblossom/blossom.h>
+#include <libblossom/schedule.h>
 
 // This is the simple, O(N) latency pthread creation
 /* int blossom_pthreads(blossom_state *ctx,const pthread_attr_t *attr,
@@ -22,6 +23,7 @@ typedef struct blossom {
 	unsigned idx;
 	blossom_state *ctx;
 	const pthread_attr_t *attr;
+	void *(*fxn)(void *);
 	void *arg;
 } blossom;
 
@@ -37,7 +39,7 @@ blossom_thread(void *unsafeb){
 	if(b->idx != b->ctx->tidcount){
 		// spawn new one FIXME
 	}
-	pthread_exit(NULL);
+	pthread_exit(b->fxn(b->arg));
 }
 
 void blossom_free_state(blossom_state *ctx){
@@ -65,8 +67,9 @@ int blossom_pthreads(blossom_state *ctx,const pthread_attr_t *attr,
 	b->idx = 0;
 	b->ctx = ctx;
 	b->attr = attr;
+	b->fxn = fxn;
 	b->arg = arg;
-	if( (ret = pthread_create(&ctx->tids[0],attr,fxn,b)) ){
+	if( (ret = pthread_create(&ctx->tids[0],attr,blossom_thread,b)) ){
 		free(b);
 		return ret;
 	}

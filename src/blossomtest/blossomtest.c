@@ -32,7 +32,11 @@ int main(void){
 					ret,strerror(ret));
 			return EXIT_FAILURE;
 		}
-		printf("Joined (Argument: %p)\n",arg);
+		if(arg){
+			fprintf(stderr,"pthread_join provided value %p\n",arg);
+			return EXIT_FAILURE;
+		}
+		printf("Joined (Verified argument (%p))\n",arg);
 	}
 	blossom_free_state(&bloom);
 	printf("Tests succeeded.\n");
