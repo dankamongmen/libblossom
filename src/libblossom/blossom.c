@@ -85,7 +85,7 @@ block_on_bloom(blossom *b){
 	if( (ret = pthread_mutex_lock(&b->mutex)) ){
 		return ret;
 	}
-	while(b->result == 0){
+	while(b->result == BLOOM_INITIALIZED){
 		if( (ret = pthread_cond_wait(&b->cond,&b->mutex)) ){
 			return ret;
 		}
@@ -120,6 +120,8 @@ idx_right(unsigned idx){
 static void *
 blossom_thread(void *unsafeb){
 	blossom *b = unsafeb;
+	void *(*fxn)(void *);
+	void *arg;
 
 	if(idx_left(b->idx) < b->ctx->tidcount){
 		blossom *bl;
@@ -128,8 +130,8 @@ blossom_thread(void *unsafeb){
 					b->fxn,b->arg)) == NULL){
 			BLOOM_FAILURE;
 		}
-		if(pthread_create(&b->ctx->tids[idx_left(b->idx)],
-					b->attr,blossom_thread,bl)){
+		if(pthread_create(&bl->ctx->tids[idx_left(b->idx)],
+					bl->attr,blossom_thread,bl)){
 			free_blossom(bl);
 			BLOOM_FAILURE;
 		}
@@ -140,8 +142,8 @@ blossom_thread(void *unsafeb){
 					b->attr,b->fxn,b->arg)) == NULL){
 				BLOOM_FAILURE;
 			}
-			if(pthread_create(&b->ctx->tids[idx_right(b->idx)],
-						b->attr,blossom_thread,br)){
+			if(pthread_create(&br->ctx->tids[idx_right(b->idx)],
+						br->attr,blossom_thread,br)){
 				// FIXME reap left
 				BLOOM_FAILURE;
 			}
@@ -158,11 +160,13 @@ blossom_thread(void *unsafeb){
 		}
 		free_blossom(bl);
 	}
+	fxn = b->fxn;
+	arg = b->arg;
 	pthread_mutex_lock(&b->mutex);
 	b->result = BLOOM_SUCCESS;
 	pthread_cond_signal(&b->cond);
 	pthread_mutex_unlock(&b->mutex);
-	pthread_exit(b->fxn(b->arg));
+	pthread_exit(fxn(arg));
 }
 
 void blossom_free_state(blossom_state *ctx){
