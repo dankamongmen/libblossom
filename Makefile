@@ -18,7 +18,7 @@ BIN_LFLAGS+=-L$(dir $(LIBBLOSSOM)) -l$(PROJ)
 LIB:=$(LIBBLOSSOM)
 BIN:=$(BLOSSOMTEST)
 
-CFLAGS+=-pthread -D_GNU_SOURCE -fpic -I$(SRC) -fvisibility=hidden -O2 -Wall
+CFLAGS+=-pthread -D_GNU_SOURCE -fpic -I$(SRC) -fvisibility=hidden -O2 -Wall -W -Werror
 LFLAGS+=-Wl,-O,--default-symver,--enable-new-dtags,--as-needed,--warn-common
 CTAGS?=ctags
 

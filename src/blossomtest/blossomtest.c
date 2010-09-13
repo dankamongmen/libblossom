@@ -23,7 +23,8 @@ argfxn(void *v){
 static int
 do_bloom(int (*fxn)(blossom_state *,const pthread_attr_t *,void *(*)(void *),void *),blossom_state *ctx){
 	void *arg = ctx;
-	int ret,z;
+	unsigned z;
+	int ret;
 
 	if( (ret = fxn(ctx,NULL,argfxn,arg)) ){
 		fprintf(stderr,"blossom_pthreads returned %d (%s)\n",
@@ -42,7 +43,7 @@ do_bloom(int (*fxn)(blossom_state *,const pthread_attr_t *,void *(*)(void *),voi
 			fprintf(stderr,"pthread_join provided value %p, wanted %p\n",rarg,arg);
 			return -1;
 		}
-		printf("Joined (Verified argument (%p))\n",arg);
+		printf("Joined %u (Verified argument (%p))\n",z,arg);
 	}
 	printf("Reaped %u thread%s.\n",ctx->tidcount,ctx->tidcount == 1 ? "" : "s");
 	blossom_free_state(ctx);
