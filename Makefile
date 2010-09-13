@@ -2,6 +2,8 @@
 .DEFAULT_GOAL:=test
 .PHONY: all bin lib test clean
 
+VERSION=0.99.0
+
 OUT:=out
 SRC:=src
 PROJ:=blossom
