@@ -39,7 +39,7 @@ do_bloom(blossom_state *ctx){
 			return -1;
 		}
 		if(arg != rarg){
-			fprintf(stderr,"pthread_join provided value %p\n",arg);
+			fprintf(stderr,"pthread_join provided value %p, wanted %p\n",rarg,arg);
 			return -1;
 		}
 		printf("Joined (Verified argument (%p))\n",arg);
