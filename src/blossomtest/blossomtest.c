@@ -9,6 +9,11 @@ static blossom_state bloom = {
 	.tidcount = 1,
 };
 
+static blossom_state bloom128 = {
+	.tids = NULL,
+	.tidcount = 128,
+};
+
 static void *
 fxn(void *v){
 	printf("Argument: %p\n",v);
@@ -17,34 +22,39 @@ fxn(void *v){
 
 static int
 do_bloom(blossom_state *ctx){
+	void *arg = ctx;
 	int ret,z;
 
-	if( (ret = blossom_pthreads(&bloom,NULL,fxn,NULL)) ){
+	if( (ret = blossom_pthreads(ctx,NULL,fxn,arg)) ){
 		fprintf(stderr,"blossom_pthreads returned %d (%s)\n",
 				ret,strerror(ret));
 		return -1;
 	}
-	for(z = 0 ; z < bloom.tidcount ; ++z){
-		void *arg;
+	for(z = 0 ; z < ctx->tidcount ; ++z){
+		void *rarg;
 
-		if( (ret = pthread_join(bloom.tids[z],&arg)) ){
+		if( (ret = pthread_join(ctx->tids[z],&rarg)) ){
 			fprintf(stderr,"pthread_join returned %d (%s)\n",
 					ret,strerror(ret));
 			return -1;
 		}
-		if(arg){
+		if(arg != rarg){
 			fprintf(stderr,"pthread_join provided value %p\n",arg);
 			return -1;
 		}
 		printf("Joined (Verified argument (%p))\n",arg);
 	}
-	blossom_free_state(&bloom);
+	printf("Reaped %u threads.\n",ctx->tidcount);
+	blossom_free_state(ctx);
 	return 0;
 }
 
 int main(void){
 	printf("Testing libblossom...\n");
 	if(do_bloom(&bloom)){
+		return EXIT_FAILURE;
+	}
+	if(do_bloom(&bloom128)){
 		return EXIT_FAILURE;
 	}
 	printf("Tests succeeded.\n");
