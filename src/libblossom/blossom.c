@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -17,16 +18,16 @@ typedef cpuset_t cpu_set_t;
 // Linux setups (including RHEL5). This requires only CPU_{SETSIZE,ISSET}.
 static inline unsigned
 portable_cpuset_count(void){
-        unsigned count = 0,cpu;
+	unsigned count = 0,cpu;
 	cpu_set_t mask;
 
 #if defined(__freebsd__)
-        if(cpuset_getaffinity(CPU_LEVEL_CPUSET,CPU_WHICH_CPUSET,-1,
-                                sizeof(mask),&mask) == 0){
+	if(cpuset_getaffinity(CPU_LEVEL_CPUSET,CPU_WHICH_CPUSET,-1,
+				sizeof(mask),&mask) == 0){
 #elif defined(__linux__)
-        // We might be only a subthread of a larger application; use the
-        // affinity mask of the thread which initializes us.
-        if(pthread_getaffinity_np(pthread_self(),sizeof(mask),&mask) == 0){
+	// We might be only a subthread of a larger application; use the
+	// affinity mask of the thread which initializes us.
+	if(pthread_getaffinity_np(pthread_self(),sizeof(mask),&mask) == 0){
 #else
 #error "Need cpu_set_t definition for this platform" // solaris is psetid_t
 #endif
@@ -36,7 +37,7 @@ portable_cpuset_count(void){
 			}
 		}
 	}
-        return count;
+	return count;
 }
 
 // This is the simple, O(N) latency pthread creation
@@ -149,9 +150,21 @@ idx_right(unsigned idx){
 #define RET_BLOOM_FAILURE do{ \
 		pthread_mutex_lock(&b->mutex); \
 		b->result = BLOOM_EXCEPTION; \
+		pthread_cond_signal(&b->cond); \
 		pthread_mutex_unlock(&b->mutex); \
 		return NULL; \
 	}while(0)
+
+static int
+mark_bloom_success(blossom *b){
+	if(pthread_mutex_lock(&b->mutex)){
+		return -1;
+	}
+	b->result = BLOOM_SUCCESS;
+	pthread_cond_signal(&b->cond);
+	pthread_mutex_unlock(&b->mutex);
+	return 0;
+}
 
 static void *
 blossom_thread(void *unsafeb){
@@ -198,10 +211,9 @@ blossom_thread(void *unsafeb){
 	}
 	fxn = b->fxn;
 	arg = b->arg;
-	pthread_mutex_lock(&b->mutex);
-	b->result = BLOOM_SUCCESS;
-	pthread_cond_signal(&b->cond);
-	pthread_mutex_unlock(&b->mutex);
+	if(mark_bloom_success(b)){
+		RET_BLOOM_FAILURE;
+	}
 	return fxn(arg);
 }
 
@@ -288,27 +300,51 @@ int blossom_per_pe(unsigned tids,blossom_state *ctx,const pthread_attr_t *attr,
 
 static void *
 blossom_pe_thread(void *unsafeb){
-	int cpu;
+	blossom *b = unsafeb;
+	void *(*fxn)(void *);
+	void *arg;
+	int cpu,dcpu;
 
 	cpu = sched_getcpu();
-	return blossom_thread(unsafeb);
+	dcpu = b->idx;
+	cpu_set_t mask;
+
+	CPU_ZERO(&mask);
+	CPU_SET(dcpu,&mask);
+#if defined(__freebsd__)
+	if(cpuset_setaffinity(CPU_LEVEL_WHICH,CPU_WHICH_TID,-1,
+				sizeof(mask),&mask)){
+#else
+	if(sched_setaffinity(0,sizeof(mask),&mask)){
+#endif
+		RET_BLOOM_FAILURE;
+	}
+	if(cpu != dcpu){
+		printf("Moved from CPU %d to %d\n",cpu,dcpu);
+	}
+	fxn = b->fxn;
+	arg = b->arg;
+	if(mark_bloom_success(b)){
+		RET_BLOOM_FAILURE;
+	}
+	return fxn(arg);
 }
 
 int blossom_on_pe(unsigned tids,blossom_state *ctx,const pthread_attr_t *attr,
 			void *(*fxn)(void *),void *arg){
 	cpu_set_t mask;
-        unsigned cpu;
+	unsigned cpu;
 	int ret;
 
 	ctx->tidcount = 0;
 	ctx->tids = NULL;
 #if defined(__freebsd__)
-        if(cpuset_getaffinity(CPU_LEVEL_CPUSET,CPU_WHICH_CPUSET,-1,
-                                sizeof(mask),&mask) == 0){
+	if(cpuset_getaffinity(CPU_LEVEL_CPUSET,CPU_WHICH_CPUSET,-1,
+				sizeof(mask),&mask) == 0){
 #elif defined(__linux__)
-        // We might be only a subthread of a larger application; use the
-        // affinity mask of the thread which initializes us.
-        if(pthread_getaffinity_np(pthread_self(),sizeof(mask),&mask) == 0){
+	// We might be only a subthread of a larger application; use the
+	// affinity mask of the thread which initializes us.
+	if(pthread_getaffinity_np(pthread_self(),sizeof(mask),&mask) == 0){
 #else
 #error "Need cpu_set_t definition for this platform" // solaris is psetid_t
 #endif
@@ -324,7 +360,7 @@ int blossom_on_pe(unsigned tids,blossom_state *ctx,const pthread_attr_t *attr,
 				}
 				ctx->tids = tmp;
 				for(z = 0 ; z < tids ; ++z){
-					if( (ret = blossom_1_thread(ctx->tidcount,ctx,attr,fxn,arg,
+					if( (ret = blossom_1_thread(cpu + z,ctx,attr,fxn,arg,
 								blossom_pe_thread)) ){
 						// FIXME reap backward
 						return ret;
