@@ -22,6 +22,7 @@
 enum {
 	BLOOM_INITIALIZED,
 	BLOOM_SUCCESS,
+	BLOOM_EXCEPTION,
 };
 
 typedef struct blossom {
@@ -99,12 +100,63 @@ block_on_bloom(blossom *b){
 	return -1;
 }
 
+static inline unsigned
+idx_left(unsigned idx){
+	return 2 * idx + 1;
+}
+
+static inline unsigned
+idx_right(unsigned idx){
+	return 2 * idx + 2;
+}
+
+#define BLOOM_FAILURE do{ \
+		pthread_mutex_lock(&b->mutex); \
+		b->result = BLOOM_EXCEPTION; \
+		pthread_mutex_unlock(&b->mutex); \
+		return NULL; \
+	}while(0)
+
 static void *
 blossom_thread(void *unsafeb){
 	blossom *b = unsafeb;
 
-	if(b->idx != b->ctx->tidcount){
-		// spawn new one FIXME
+	if(idx_left(b->idx) < b->ctx->tidcount){
+		blossom *bl;
+
+		if((bl = create_blossom(idx_left(b->idx),b->ctx,b->attr,
+					b->fxn,b->arg)) == NULL){
+			BLOOM_FAILURE;
+		}
+		if(pthread_create(&b->ctx->tids[idx_left(b->idx)],
+					b->attr,blossom_thread,bl)){
+			free_blossom(bl);
+			BLOOM_FAILURE;
+		}
+		if(idx_right(b->idx) < b->ctx->tidcount){
+			blossom *br;
+
+			if((br = create_blossom(idx_right(b->idx),b->ctx,
+					b->attr,b->fxn,b->arg)) == NULL){
+				BLOOM_FAILURE;
+			}
+			if(pthread_create(&b->ctx->tids[idx_right(b->idx)],
+						b->attr,blossom_thread,br)){
+				// FIXME reap left
+				BLOOM_FAILURE;
+			}
+			if(block_on_bloom(br)){
+				// FIXME reap both
+				BLOOM_FAILURE;
+			}
+			free_blossom(br);
+		}
+		if(block_on_bloom(bl)){
+			// FIXME reap
+			free_blossom(bl);
+			BLOOM_FAILURE;
+		}
+		free_blossom(bl);
 	}
 	pthread_mutex_lock(&b->mutex);
 	b->result = BLOOM_SUCCESS;
@@ -140,6 +192,7 @@ int blossom_pthreads(blossom_state *ctx,const pthread_attr_t *attr,
 		return ret;
 	}
 	if( (ret = block_on_bloom(b)) ){
+		// FIXME reap
 		free_blossom(b);
 		return ret;
 	}
