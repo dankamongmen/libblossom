@@ -6,7 +6,7 @@
 
 static blossom_state bloom = {
 	.tids = NULL,
-	.tidcount = sizeof(bloom.tids) / sizeof(*bloom.tids),
+	.tidcount = 1,
 };
 
 static void *
@@ -15,14 +15,14 @@ fxn(void *v){
 	pthread_exit(v);
 }
 
-int main(void){
+static int
+do_bloom(blossom_state *ctx){
 	int ret,z;
 
-	printf("Testing libblossom...\n");
 	if( (ret = blossom_pthreads(&bloom,NULL,fxn,NULL)) ){
 		fprintf(stderr,"blossom_pthreads returned %d (%s)\n",
 				ret,strerror(ret));
-		return EXIT_FAILURE;
+		return -1;
 	}
 	for(z = 0 ; z < bloom.tidcount ; ++z){
 		void *arg;
@@ -30,15 +30,23 @@ int main(void){
 		if( (ret = pthread_join(bloom.tids[z],&arg)) ){
 			fprintf(stderr,"pthread_join returned %d (%s)\n",
 					ret,strerror(ret));
-			return EXIT_FAILURE;
+			return -1;
 		}
 		if(arg){
 			fprintf(stderr,"pthread_join provided value %p\n",arg);
-			return EXIT_FAILURE;
+			return -1;
 		}
 		printf("Joined (Verified argument (%p))\n",arg);
 	}
 	blossom_free_state(&bloom);
+	return 0;
+}
+
+int main(void){
+	printf("Testing libblossom...\n");
+	if(do_bloom(&bloom)){
+		return EXIT_FAILURE;
+	}
 	printf("Tests succeeded.\n");
 	return EXIT_SUCCESS;
 }
