@@ -25,9 +25,20 @@ CFLAGS+=-pthread -D_GNU_SOURCE -fpic -I$(SRC) -fvisibility=hidden -O2 -Wall -W -
 LFLAGS+=-Wl,-O,--default-symver,--enable-new-dtags,--as-needed,--warn-common
 CTAGS?=$(shell (which ctags || echo ctags) 2> /dev/null)
 XSLTPROC?=$(shell (which xsltproc || echo xsltproc) 2> /dev/null)
+INSTALL?=install -v
+PREFIX?=/usr/local
+ifeq ($(UNAME),FreeBSD)
+DOCPREFIX?=$(PREFIX)/man
+MANBIN?=makewhatis
+LDCONFIG?=ldconfig -m
+else
+DOCPREFIX?=$(PREFIX)/share/man
+MANBIN?=mandb
+LDCONFIG?=ldconfig
+endif
 
 MAN3SRC:=$(wildcard $(DOC)/man/man3/*)
-MAN3:=$(addprefix $(OUT)/,$(MAN3SRC:%.xml=%.3blossom))
+MAN3:=$(addprefix $(OUT)/,$(MAN3SRC:%.xml=%.3$(PROJ)))
 
 all: $(TAGS) lib bin
 
@@ -65,6 +76,15 @@ $(TAGS): $(wildcard $(SRC)/*/*.c) $(wildcard $(SRC)/*/*.h)
 clean:
 	rm -rf $(OUT)
 
-install: all
+install: all doc
+	@mkdir -p $(PREFIX)/lib
+	$(INSTALL) -m 0644 $(realpath $(LIB)) $(PREFIX)/lib
+	@mkdir -p $(PREFIX)/include/lib$(PROJ)
+	@$(INSTALL) -m 0644 $(wildcard $(SRC)/lib$(PROJ)/*.h) $(PREFIX)/include/lib$(PROJ)/
+	@mkdir -p $(DOCPREFIX)/man3
+	@$(INSTALL) -m 0644 $(MAN3) $(DOCPREFIX)/man3
+	@echo "Running $(LDCONFIG) $(PREFIX)/lib..." && $(LDCONFIG) $(PREFIX)/lib
+	@echo "Running $(MANBIN) $(DOCPREFIX)..." && $(MANBIN) $(DOCPREFIX)
+
 
 uninstall:
