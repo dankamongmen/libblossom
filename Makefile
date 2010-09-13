@@ -1,6 +1,6 @@
 .DELTE_ON_ERROR:
 .DEFAULT_GOAL:=test
-.PHONY: all bin lib doc test clean
+.PHONY: all bin lib doc test clean install uninstall
 
 VERSION=0.99.0
 
@@ -64,3 +64,7 @@ $(TAGS): $(wildcard $(SRC)/*/*.c) $(wildcard $(SRC)/*/*.h)
 
 clean:
 	rm -rf $(OUT)
+
+install: all
+
+uninstall:
