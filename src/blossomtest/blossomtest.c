@@ -21,12 +21,12 @@ argfxn(void *v){
 }
 
 static int
-do_bloom(int (*fxn)(blossom_state *,const pthread_attr_t *,void *(*)(void *),void *),blossom_state *ctx){
+do_bloom(unsigned count,int (*fxn)(unsigned,blossom_state *,const pthread_attr_t *,void *(*)(void *),void *),blossom_state *ctx){
 	void *arg = ctx;
 	unsigned z;
 	int ret;
 
-	if( (ret = fxn(ctx,NULL,argfxn,arg)) ){
+	if( (ret = fxn(count,ctx,NULL,argfxn,arg)) ){
 		fprintf(stderr,"blossom_pthreads returned %d (%s)\n",
 				ret,strerror(ret));
 		return -1;
@@ -52,22 +52,22 @@ do_bloom(int (*fxn)(blossom_state *,const pthread_attr_t *,void *(*)(void *),voi
 
 int main(void){
 	printf("Testing libblossom...\n");
-	if(do_bloom(blossom_pthreads,&bloom)){
+	if(do_bloom(1,blossom_pthreads,&bloom)){
 		return EXIT_FAILURE;
 	}
-	if(do_bloom(blossom_per_pe,&bloom)){
+	if(do_bloom(1,blossom_per_pe,&bloom)){
 		return EXIT_FAILURE;
 	}
-	if(do_bloom(blossom_on_pe,&bloom)){
+	if(do_bloom(1,blossom_on_pe,&bloom)){
 		return EXIT_FAILURE;
 	}
-	if(do_bloom(blossom_pthreads,&bloom128)){
+	if(do_bloom(128,blossom_pthreads,&bloom128)){
 		return EXIT_FAILURE;
 	}
-	if(do_bloom(blossom_per_pe,&bloom128)){
+	if(do_bloom(128,blossom_per_pe,&bloom128)){
 		return EXIT_FAILURE;
 	}
-	if(do_bloom(blossom_on_pe,&bloom128)){
+	if(do_bloom(128,blossom_on_pe,&bloom128)){
 		return EXIT_FAILURE;
 	}
 	printf("Tests succeeded.\n");

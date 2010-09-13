@@ -209,6 +209,7 @@ void blossom_free_state(blossom_state *ctx){
 	if(ctx){
 		free(ctx->tids);
 		ctx->tids = NULL;
+		ctx->tidcount = 0;
 	}
 }
 
@@ -249,17 +250,18 @@ blossom_n_threads(blossom_state *ctx,const pthread_attr_t *attr,
 }
 
 // pthreads return semantics (positive error code in result, errno ignored)
-int blossom_pthreads(blossom_state *ctx,const pthread_attr_t *attr,
+int blossom_pthreads(unsigned tids,blossom_state *ctx,const pthread_attr_t *attr,
 			void *(*fxn)(void *),void *arg){
 	int ret;
 
+	ctx->tidcount = tids;
 	if( (ret = blossom_n_threads(ctx,attr,fxn,arg,blossom_thread)) ){
 		return ret;
 	}
 	return 0;
 }
 
-int blossom_per_pe(blossom_state *ctx,const pthread_attr_t *attr,
+int blossom_per_pe(unsigned tids,blossom_state *ctx,const pthread_attr_t *attr,
 			void *(*fxn)(void *),void *arg){
 	unsigned cpucount;
 	int ret;
@@ -267,7 +269,7 @@ int blossom_per_pe(blossom_state *ctx,const pthread_attr_t *attr,
 	if((cpucount = portable_cpuset_count()) == 0){
 		return errno;
 	}
-	ctx->tidcount *= cpucount; // FIXME check for overflow
+	ctx->tidcount = tids * cpucount; // FIXME check for overflow
 	if( (ret = blossom_n_threads(ctx,attr,fxn,arg,blossom_thread)) ){
 		blossom_free_state(ctx);
 		return ret;
@@ -281,7 +283,7 @@ blossom_pe_thread(void *unsafeb){
 	return blossom_thread(unsafeb);
 }
 
-int blossom_on_pe(blossom_state *ctx,const pthread_attr_t *attr,
+int blossom_on_pe(unsigned tids,blossom_state *ctx,const pthread_attr_t *attr,
 			void *(*fxn)(void *),void *arg){
 	unsigned cpucount;
 	int ret;
@@ -289,7 +291,7 @@ int blossom_on_pe(blossom_state *ctx,const pthread_attr_t *attr,
 	if((cpucount = portable_cpuset_count()) == 0){
 		return errno;
 	}
-	ctx->tidcount *= cpucount; // FIXME check for overflow
+	ctx->tidcount = tids * cpucount; // FIXME check for overflow
 	if( (ret = blossom_n_threads(ctx,attr,fxn,arg,blossom_pe_thread)) ){
 		blossom_free_state(ctx);
 		return ret;
