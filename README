@@ -9,4 +9,9 @@ fixed number per processing element.
 BUILDING
 --------
 
-Run 'make'. GNU make is required.
+Run 'make all'. GNU make is required.
+
+INSTALLING
+----------
+
+Run 'make install'.
