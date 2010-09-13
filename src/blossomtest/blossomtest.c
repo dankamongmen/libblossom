@@ -54,7 +54,13 @@ int main(void){
 	if(do_bloom(blossom_pthreads,&bloom)){
 		return EXIT_FAILURE;
 	}
+	if(do_bloom(blossom_per_pe,&bloom)){
+		return EXIT_FAILURE;
+	}
 	if(do_bloom(blossom_pthreads,&bloom128)){
+		return EXIT_FAILURE;
+	}
+	if(do_bloom(blossom_per_pe,&bloom128)){
 		return EXIT_FAILURE;
 	}
 	printf("Tests succeeded.\n");

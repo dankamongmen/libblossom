@@ -205,3 +205,14 @@ int blossom_pthreads(blossom_state *ctx,const pthread_attr_t *attr,
 	}
 	return 0;
 }
+
+int blossom_per_pe(blossom_state *ctx,const pthread_attr_t *attr,
+			void *(*fxn)(void *),void *arg){
+	blossom *b;
+
+	if(ctx->tidcount <= 0){
+		return EINVAL;
+	}
+	// FIXME do stuff
+	return 0;
+}
