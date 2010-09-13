@@ -44,7 +44,7 @@ do_bloom(int (*fxn)(blossom_state *,const pthread_attr_t *,void *(*)(void *),voi
 		}
 		printf("Joined (Verified argument (%p))\n",arg);
 	}
-	printf("Reaped %u threads.\n",ctx->tidcount);
+	printf("Reaped %u thread%s.\n",ctx->tidcount,ctx->tidcount == 1 ? "" : "s");
 	blossom_free_state(ctx);
 	return 0;
 }
