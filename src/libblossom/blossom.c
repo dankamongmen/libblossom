@@ -213,12 +213,36 @@ void blossom_free_state(blossom_state *ctx){
 	}
 }
 
+static int
+blossom_1_thread(unsigned idx,blossom_state *ctx,const pthread_attr_t *attr,
+			void *(*fxn)(void *),void *arg,
+			void *(*blfxn)(void *)){
+	blossom *b;
+	int ret;
+
+	if((b = create_blossom(idx,ctx,attr,fxn,arg)) == NULL){
+		return errno;
+	}
+	if( (ret = pthread_create(&ctx->tids[idx],attr,blfxn,b)) ){
+		free_blossom(b);
+		return ret;
+	}
+	if( (ret = block_on_bloom(b)) ){
+		// FIXME reap
+		free_blossom(b);
+		return ret;
+	}
+	if( (ret = free_blossom(b)) ){
+		return ret;
+	}
+	return 0;
+}
+
 // Blossom precisely as many threads as are specified by tidcount.
 static int
 blossom_n_threads(blossom_state *ctx,const pthread_attr_t *attr,
 			void *(*fxn)(void *),void *arg,
 			void *(*blfxn)(void *)){
-	blossom *b;
 	int ret;
 
 	if(ctx->tidcount <= 0){
@@ -227,22 +251,7 @@ blossom_n_threads(blossom_state *ctx,const pthread_attr_t *attr,
 	if((ctx->tids = create_tid_state(ctx->tidcount)) == NULL){
 		return errno;
 	}
-	if((b = create_blossom(0,ctx,attr,fxn,arg)) == NULL){
-		blossom_free_state(ctx);
-		return errno;
-	}
-	if( (ret = pthread_create(&ctx->tids[0],attr,blfxn,b)) ){
-		free_blossom(b);
-		blossom_free_state(ctx);
-		return ret;
-	}
-	if( (ret = block_on_bloom(b)) ){
-		// FIXME reap
-		free_blossom(b);
-		blossom_free_state(ctx);
-		return ret;
-	}
-	if( (ret = free_blossom(b)) ){
+	if( (ret = blossom_1_thread(0,ctx,attr,fxn,arg,blfxn)) ){
 		blossom_free_state(ctx);
 		return ret;
 	}
@@ -279,22 +288,52 @@ int blossom_per_pe(unsigned tids,blossom_state *ctx,const pthread_attr_t *attr,
 
 static void *
 blossom_pe_thread(void *unsafeb){
-	// FIXME bind to processor
+	int cpu;
+
+	cpu = sched_getcpu();
 	return blossom_thread(unsafeb);
 }
 
 int blossom_on_pe(unsigned tids,blossom_state *ctx,const pthread_attr_t *attr,
 			void *(*fxn)(void *),void *arg){
-	unsigned cpucount;
+	cpu_set_t mask;
+        unsigned cpu;
 	int ret;
 
-	if((cpucount = portable_cpuset_count()) == 0){
-		return errno;
+	ctx->tidcount = 0;
+	ctx->tids = NULL;
+#if defined(__freebsd__)
+        if(cpuset_getaffinity(CPU_LEVEL_CPUSET,CPU_WHICH_CPUSET,-1,
+                                sizeof(mask),&mask) == 0){
+#elif defined(__linux__)
+        // We might be only a subthread of a larger application; use the
+        // affinity mask of the thread which initializes us.
+        if(pthread_getaffinity_np(pthread_self(),sizeof(mask),&mask) == 0){
+#else
+#error "Need cpu_set_t definition for this platform" // solaris is psetid_t
+#endif
+		for(cpu = 0 ; cpu < CPU_SETSIZE ; ++cpu){
+			if(CPU_ISSET(cpu,&mask)){
+				typeof(*ctx->tids) *tmp;
+				unsigned z;
+
+				if((tmp = realloc(ctx->tids,(ctx->tidcount + tids) * sizeof(*tmp))) == NULL){
+					// FIXME reap backward
+					blossom_free_state(ctx);
+					return errno;
+				}
+				ctx->tids = tmp;
+				for(z = 0 ; z < tids ; ++z){
+					if( (ret = blossom_1_thread(ctx->tidcount,ctx,attr,fxn,arg,
+								blossom_pe_thread)) ){
+						// FIXME reap backward
+						return ret;
+					}
+					++ctx->tidcount;
+				}
+			}
+		}
+		return 0;
 	}
-	ctx->tidcount = tids * cpucount; // FIXME check for overflow
-	if( (ret = blossom_n_threads(ctx,attr,fxn,arg,blossom_pe_thread)) ){
-		blossom_free_state(ctx);
-		return ret;
-	}
-	return 0;
+	return errno;
 }
