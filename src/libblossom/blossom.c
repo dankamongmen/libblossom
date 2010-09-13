@@ -298,19 +298,26 @@ int blossom_per_pe(unsigned tids,blossom_state *ctx,const pthread_attr_t *attr,
 	return 0;
 }
 
+struct pestruct {
+	unsigned dcpu;
+	void *arg;
+};
+
 static void *
 blossom_pe_thread(void *unsafeb){
+	struct pestruct *pe;
 	blossom *b = unsafeb;
 	void *(*fxn)(void *);
 	void *arg;
 	int cpu,dcpu;
 
+	pe = b->arg;
 	cpu = sched_getcpu();
-	dcpu = b->idx;
+	dcpu = b->result;
 	cpu_set_t mask;
 
 	CPU_ZERO(&mask);
-	CPU_SET(dcpu,&mask);
+	CPU_SET(pe->dcpu,&mask);
 #if defined(__freebsd__)
 	if(cpuset_setaffinity(CPU_LEVEL_WHICH,CPU_WHICH_TID,-1,
 				sizeof(mask),&mask)){
@@ -323,7 +330,7 @@ blossom_pe_thread(void *unsafeb){
 		printf("Moved from CPU %d to %d\n",cpu,dcpu);
 	}
 	fxn = b->fxn;
-	arg = b->arg;
+	arg = pe->arg;
 	if(mark_bloom_success(b)){
 		RET_BLOOM_FAILURE;
 	}
@@ -351,6 +358,10 @@ int blossom_on_pe(unsigned tids,blossom_state *ctx,const pthread_attr_t *attr,
 		for(cpu = 0 ; cpu < CPU_SETSIZE ; ++cpu){
 			if(CPU_ISSET(cpu,&mask)){
 				typeof(*ctx->tids) *tmp;
+				struct pestruct curry = {
+					.dcpu = cpu,
+					.arg = arg,
+				};
 				unsigned z;
 
 				if((tmp = realloc(ctx->tids,(ctx->tidcount + tids) * sizeof(*tmp))) == NULL){
@@ -360,8 +371,8 @@ int blossom_on_pe(unsigned tids,blossom_state *ctx,const pthread_attr_t *attr,
 				}
 				ctx->tids = tmp;
 				for(z = 0 ; z < tids ; ++z){
-					if( (ret = blossom_1_thread(cpu + z,ctx,attr,fxn,arg,
-								blossom_pe_thread)) ){
+					if( (ret = blossom_1_thread(ctx->tidcount,ctx,attr,fxn,
+								&curry,blossom_pe_thread)) ){
 						// FIXME reap backward
 						return ret;
 					}
