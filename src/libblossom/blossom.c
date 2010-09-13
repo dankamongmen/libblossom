@@ -202,7 +202,7 @@ blossom_thread(void *unsafeb){
 	b->result = BLOOM_SUCCESS;
 	pthread_cond_signal(&b->cond);
 	pthread_mutex_unlock(&b->mutex);
-	pthread_exit(fxn(arg));
+	return fxn(arg);
 }
 
 void blossom_free_state(blossom_state *ctx){
@@ -277,17 +277,8 @@ int blossom_per_pe(blossom_state *ctx,const pthread_attr_t *attr,
 
 static void *
 blossom_pe_thread(void *unsafeb){
-	blossom *b = unsafeb;
-	void *(*fxn)(void *);
-	void *arg;
-
-	fxn = b->fxn;
-	arg = b->arg;
-	pthread_mutex_lock(&b->mutex);
-	b->result = BLOOM_EXCEPTION;
-	pthread_cond_signal(&b->cond);
-	pthread_mutex_unlock(&b->mutex);
-	pthread_exit(fxn(arg));
+	// FIXME bind to processor
+	return blossom_thread(unsafeb);
 }
 
 int blossom_on_pe(blossom_state *ctx,const pthread_attr_t *attr,
