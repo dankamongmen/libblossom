@@ -59,40 +59,41 @@
 	</refmeta>
 	<refnamediv>
 		<refname>&dhpackage;</refname>
-		<refpurpose>High-performance I/O and primitives</refpurpose>
+		<refpurpose>Advanced parallel thread spawning</refpurpose>
 	</refnamediv>
 	<refsynopsisdiv>
 		<funcsynopsis>
 			<funcsynopsisinfo>#include &lt;libblossom/blossom.h&gt;</funcsynopsisinfo>
 			<funcprototype>
-			<funcdef>blossom_err <function>blossom_addfd</function></funcdef>
+			<funcdef>int <function>blossom_pthreads</function></funcdef>
+			<paramdef>unsigned <parameter>tids</parameter></paramdef>
 			<paramdef>struct blossom_ctx *<parameter>ctx</parameter></paramdef>
-			<paramdef>int <parameter>fd</parameter></paramdef>
-			<paramdef>libblossomrcb <parameter>rcbfxn</parameter></paramdef>
-			<paramdef>libblossomwcb <parameter>wcbfxn</parameter></paramdef>
-			<paramdef>void *<parameter>cbstate</parameter></paramdef>
+			<paramdef>const pthread_attr_t *<parameter>attr</parameter></paramdef>
+			<paramdef>void *(*<parameter>fxn</parameter>)
+				<funcparams>void *</funcparams></paramdef>
+			<paramdef>void *<parameter>arg</parameter></paramdef>
 			</funcprototype>
 		</funcsynopsis>
 		<funcsynopsis>
 			<funcprototype>
-			<funcdef>blossom_err <function>blossom_addfd_unbuffered</function></funcdef>
+			<funcdef>int <function>blossom_per_pe</function></funcdef>
+			<paramdef>unsigned <parameter>tids</parameter></paramdef>
 			<paramdef>struct blossom_ctx *<parameter>ctx</parameter></paramdef>
-			<paramdef>int <parameter>fd</parameter></paramdef>
-			<paramdef>libblossomrcb <parameter>rcbfxn</parameter></paramdef>
-			<paramdef>libblossomwcb <parameter>wcbfxn</parameter></paramdef>
-			<paramdef>void *<parameter>cbstate</parameter></paramdef>
+			<paramdef>const pthread_attr_t *<parameter>attr</parameter></paramdef>
+			<paramdef>void *(*<parameter>fxn</parameter>)
+				<funcparams>void *</funcparams></paramdef>
+			<paramdef>void *<parameter>arg</parameter></paramdef>
 			</funcprototype>
 		</funcsynopsis>
 		<funcsynopsis>
 			<funcprototype>
-			<funcdef>blossom_err <function>blossom_addconnector</function></funcdef>
+			<funcdef>int <function>blossom_on_pe</function></funcdef>
+			<paramdef>unsigned <parameter>tids</parameter></paramdef>
 			<paramdef>struct blossom_ctx *<parameter>ctx</parameter></paramdef>
-			<paramdef>int <parameter>fd</parameter></paramdef>
-			<paramdef>const struct sockaddr *<parameter>addr</parameter></paramdef>
-			<paramdef>socklen_t <parameter>sockaddr</parameter></paramdef>
-			<paramdef>libblossomrcb <parameter>rcbfxn</parameter></paramdef>
-			<paramdef>libblossomwcb <parameter>wcbfxn</parameter></paramdef>
-			<paramdef>void *<parameter>cbstate</parameter></paramdef>
+			<paramdef>const pthread_attr_t *<parameter>attr</parameter></paramdef>
+			<paramdef>void *(*<parameter>fxn</parameter>)
+				<funcparams>void *</funcparams></paramdef>
+			<paramdef>void *<parameter>arg</parameter></paramdef>
 			</funcprototype>
 		</funcsynopsis>
 		<funcsynopsis>
