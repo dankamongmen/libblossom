@@ -1,11 +1,12 @@
 .DELTE_ON_ERROR:
 .DEFAULT_GOAL:=test
-.PHONY: all bin lib test clean
+.PHONY: all bin lib doc test clean
 
 VERSION=0.99.0
 
 OUT:=out
 SRC:=src
+DOC:=doc
 PROJ:=blossom
 TAGS:=$(OUT)/tags
 LIBBLOSSOM:=$(OUT)/lib$(PROJ)/lib$(PROJ).so
@@ -22,11 +23,17 @@ BIN:=$(BLOSSOMTEST)
 
 CFLAGS+=-pthread -D_GNU_SOURCE -fpic -I$(SRC) -fvisibility=hidden -O2 -Wall -W -Werror
 LFLAGS+=-Wl,-O,--default-symver,--enable-new-dtags,--as-needed,--warn-common
-CTAGS?=ctags
+CTAGS?=$(shell (which ctags || echo ctags) 2> /dev/null)
+XSLTPROC?=$(shell (which xsltproc || echo xsltproc) 2> /dev/null)
+
+MAN3SRC:=$(wildcard $(DOC)/man/man3/*)
+MAN3:=$(addprefix $(OUT)/,$(MAN3SRC:%.xml=%.3blossom))
 
 all: $(TAGS) lib bin
 
 bin: $(BIN)
+
+doc: $(MAN3)
 
 lib: $(LIB)
 
@@ -44,6 +51,12 @@ $(OUT)/libblossom/lib%.so: $(OUT)/libblossom/%.o
 $(OUT)/%.o: $(SRC)/%.c $(wildcard $(SRC)/lib$(PROJ)/*.h)
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c -o $@ $<
+
+# Should the network be inaccessible, and local copies are installed, try:
+#DOC2MANXSL?=--nonet
+$(OUT)/%.3blossom: %.xml
+	@mkdir -p $(@D)
+	$(XSLTPROC) --writesubtree $(@D) -o $@ $(DOC2MANXSL) $<
 
 $(TAGS): $(wildcard $(SRC)/*/*.c) $(wildcard $(SRC)/*/*.h)
 	@mkdir -p $(@D)
