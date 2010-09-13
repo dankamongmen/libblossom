@@ -15,17 +15,17 @@ static blossom_state bloom128 = {
 };
 
 static void *
-fxn(void *v){
+argfxn(void *v){
 	printf("Argument: %p\n",v);
 	pthread_exit(v);
 }
 
 static int
-do_bloom(blossom_state *ctx){
+do_bloom(int (*fxn)(blossom_state *,const pthread_attr_t *,void *(*)(void *),void *),blossom_state *ctx){
 	void *arg = ctx;
 	int ret,z;
 
-	if( (ret = blossom_pthreads(ctx,NULL,fxn,arg)) ){
+	if( (ret = fxn(ctx,NULL,argfxn,arg)) ){
 		fprintf(stderr,"blossom_pthreads returned %d (%s)\n",
 				ret,strerror(ret));
 		return -1;
@@ -51,10 +51,10 @@ do_bloom(blossom_state *ctx){
 
 int main(void){
 	printf("Testing libblossom...\n");
-	if(do_bloom(&bloom)){
+	if(do_bloom(blossom_pthreads,&bloom)){
 		return EXIT_FAILURE;
 	}
-	if(do_bloom(&bloom128)){
+	if(do_bloom(blossom_pthreads,&bloom128)){
 		return EXIT_FAILURE;
 	}
 	printf("Tests succeeded.\n");
