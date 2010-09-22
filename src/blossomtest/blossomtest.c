@@ -6,10 +6,7 @@
 
 static void *
 argfxn(void *v){
-	int cpu;
-
-	cpu = sched_getcpu();
-	printf("CPU: %u Argument: %p\n",cpu,v);
+	printf("Argument: %p\n",v);
 	pthread_exit(v);
 }
 
