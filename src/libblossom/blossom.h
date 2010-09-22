@@ -5,6 +5,11 @@
 extern "C" {
 #endif
 
+// libblossom automates the highly parallel spawning of threads. This is
+// useful on machines with many processing elements, or NUMA machines where
+// locality among processor subgroups is critical. Either some absolute
+// number of threads can be spawned, or a number per processing element.
+
 #include <pthread.h>
 
 // Primary output from blossoming functions. After a successful call,
