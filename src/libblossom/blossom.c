@@ -2,7 +2,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include <libblossom/blossom.h>
+#include <blossom.h>
 
 #if defined(__linux__)
 #include <sched.h>
