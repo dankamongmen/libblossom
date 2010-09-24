@@ -255,18 +255,18 @@ blossom_n_threads(blossom_state *ctx,const pthread_attr_t *attr,
 }
 
 // pthreads return semantics (positive error code in result, errno ignored)
-int blossom_pthreads(unsigned tids,blossom_state *ctx,const pthread_attr_t *attr,
+int blossom_pthreads(const blossom_ctl *ctl,blossom_state *ctx,const pthread_attr_t *attr,
 			void *(*fxn)(void *),void *arg){
 	int ret;
 
-	ctx->tidcount = tids;
+	ctx->tidcount = ctl->tids;
 	if( (ret = blossom_n_threads(ctx,attr,fxn,arg,blossom_thread)) ){
 		return ret;
 	}
 	return 0;
 }
 
-int blossom_per_pe(unsigned tids,blossom_state *ctx,const pthread_attr_t *attr,
+int blossom_per_pe(const blossom_ctl *ctl,blossom_state *ctx,const pthread_attr_t *attr,
 			void *(*fxn)(void *),void *arg){
 	unsigned cpucount;
 	int ret;
@@ -274,7 +274,7 @@ int blossom_per_pe(unsigned tids,blossom_state *ctx,const pthread_attr_t *attr,
 	if((cpucount = portable_cpuset_count()) == 0){
 		return errno;
 	}
-	ctx->tidcount = tids * cpucount; // FIXME check for overflow
+	ctx->tidcount = ctl->tids * cpucount; // FIXME check for overflow
 	if( (ret = blossom_n_threads(ctx,attr,fxn,arg,blossom_thread)) ){
 		blossom_free_state(ctx);
 		return ret;
@@ -316,7 +316,7 @@ blossom_pe_thread(void *unsafeb){
 	return fxn(arg);
 }
 
-int blossom_on_pe(unsigned tids,blossom_state *ctx,const pthread_attr_t *attr,
+int blossom_on_pe(const blossom_ctl *ctl,blossom_state *ctx,const pthread_attr_t *attr,
 			void *(*fxn)(void *),void *arg){
 	cpu_set_t mask;
 	unsigned cpu;
@@ -343,13 +343,13 @@ int blossom_on_pe(unsigned tids,blossom_state *ctx,const pthread_attr_t *attr,
 				};
 				unsigned z;
 
-				if((tmp = realloc(ctx->tids,(ctx->tidcount + tids) * sizeof(*tmp))) == NULL){
+				if((tmp = realloc(ctx->tids,(ctx->tidcount + ctl->tids) * sizeof(*tmp))) == NULL){
 					// FIXME reap backward
 					blossom_free_state(ctx);
 					return errno;
 				}
 				ctx->tids = tmp;
-				for(z = 0 ; z < tids ; ++z){
+				for(z = 0 ; z < ctl->tids ; ++z){
 					if( (ret = blossom_1_thread(ctx->tidcount,ctx,attr,fxn,
 								&curry,blossom_pe_thread)) ){
 						// FIXME reap backward

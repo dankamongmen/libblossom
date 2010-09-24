@@ -20,22 +20,42 @@ typedef struct blossom_state {
 	unsigned tidcount;
 } blossom_state;
 
+typedef enum {
+	// If any failure occurs, cancel and join all created threads. If
+	// this is used with a pthread_attr_t specifying detached threads,
+	// a "trampoline" will be set up which calls pthread_detach() in its
+	// place. blossom_free_state() needn't be called if error is
+	// returned in this case (though it is safe to do so); the
+	// blossom_state structure will be zeroed out. No threads run the
+	// argument function until all threads have been spawned.
+	BLOSSOM_JOIN_ON_FAILURE,
+
+	// Return an error on any failure, but go ahead and continue
+	// attemting to spawn up through the desired number of threads.
+	BLOSSOM_RUN_ON_FAILURE,
+} blossom_init_flags;
+
+typedef struct blossom_ctl {
+	blossom_init_flags flags;
+	unsigned tids;
+} blossom_ctl;
+
 // Bloom tidcount threads. Any creation failure is a failure throughout.
-int blossom_pthreads(unsigned,blossom_state *,const pthread_attr_t *,
+int blossom_pthreads(const blossom_ctl *,blossom_state *,const pthread_attr_t *,
 			void *(*)(void *) __attribute__ ((nonnull)),void *)
 	__attribute__ ((visibility ("default")))
 	__attribute__ ((warn_unused_result));
 
 // Bloom tidcount threads per processing element. Any creation failure is a
 // failure throughout.
-int blossom_per_pe(unsigned,blossom_state *,const pthread_attr_t *,
+int blossom_per_pe(const blossom_ctl *,blossom_state *,const pthread_attr_t *,
 			void *(*)(void *) __attribute__ ((nonnull)),void *)
 	__attribute__ ((visibility ("default")))
 	__attribute__ ((warn_unused_result));
 
 // Bloom tidcount threads per processing element, binding them to the
 // appropriate processor. Any creation failure is a failure throughout.
-int blossom_on_pe(unsigned,blossom_state *,const pthread_attr_t *,
+int blossom_on_pe(const blossom_ctl *,blossom_state *,const pthread_attr_t *,
 			void *(*)(void *) __attribute__ ((nonnull)),void *)
 	__attribute__ ((visibility ("default")))
 	__attribute__ ((warn_unused_result));
