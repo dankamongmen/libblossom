@@ -20,7 +20,7 @@ BIN_LFLAGS+=-L$(dir $(LIBBLOSSOM)) -l$(PROJ)
 LIB:=$(LIBBLOSSOM)
 BIN:=$(BLOSSOMTEST)
 
-CFLAGS+=-pthread -D_GNU_SOURCE -fpic -I$(SRC) -fvisibility=hidden -O2 -Wall -W -Werror
+CFLAGS+=-pthread -D_GNU_SOURCE -fpic -I$(SRC)/lib$(PROJ) -fvisibility=hidden -O2 -Wall -W -Werror
 LFLAGS+=-Wl,-O,--default-symver,--enable-new-dtags,--as-needed,--warn-common
 CTAGS?=$(shell (which ctags || echo ctags) 2> /dev/null)
 XSLTPROC?=$(shell (which xsltproc || echo xsltproc) 2> /dev/null)
@@ -78,8 +78,8 @@ clean:
 install: all doc
 	@mkdir -p $(PREFIX)/lib
 	$(INSTALL) -m 0644 $(realpath $(LIB)) $(PREFIX)/lib
-	@mkdir -p $(PREFIX)/include/lib$(PROJ)
-	@$(INSTALL) -m 0644 $(wildcard $(SRC)/lib$(PROJ)/*.h) $(PREFIX)/include/lib$(PROJ)/
+	@mkdir -p $(PREFIX)/include
+	@$(INSTALL) -m 0644 $(wildcard $(SRC)/lib$(PROJ)/*.h) $(PREFIX)/include
 	@mkdir -p $(DOCPREFIX)/man3
 	@$(INSTALL) -m 0644 $(MAN3) $(DOCPREFIX)/man3
 	@echo "Running $(LDCONFIG) $(PREFIX)/lib..." && $(LDCONFIG) $(PREFIX)/lib

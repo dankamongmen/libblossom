@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <libblossom/blossom.h>
+#include <blossom.h>
 
 static void *
 argfxn(void *v){
