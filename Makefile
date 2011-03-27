@@ -40,7 +40,7 @@ endif
 MAN3SRC:=$(wildcard $(DOC)/man/man3/*)
 MAN3:=$(addprefix $(OUT)/,$(MAN3SRC:%.xml=%.3$(PROJ)))
 
-all: $(TAGS) lib bin
+all: $(TAGS) lib bin doc
 
 bin: $(BIN)
 
