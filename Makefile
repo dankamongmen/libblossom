@@ -21,7 +21,8 @@ LIB:=$(LIBBLOSSOM)
 BIN:=$(BLOSSOMTEST)
 
 CFLAGS+=-pthread -D_GNU_SOURCE -fpic -I$(SRC)/lib$(PROJ) -fvisibility=hidden -O2 -Wall -W -Werror
-LFLAGS+=-Wl,-O,--default-symver,--enable-new-dtags,--as-needed,--warn-common
+# Would use --default-symver, but gold doesn't know it
+LFLAGS+=-Wl,-O1,--no-undefined-version,--enable-new-dtags,--as-needed,--warn-common
 CTAGS?=$(shell (which ctags || echo ctags) 2> /dev/null)
 XSLTPROC?=$(shell (which xsltproc || echo xsltproc) 2> /dev/null)
 INSTALL?=install -v
