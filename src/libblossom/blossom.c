@@ -294,10 +294,10 @@ blossom_pe_thread(void *unsafeb){
 	void *(*fxn)(void *);
 	cpu_set_t mask;
 	void *arg;
-	int dcpu;
+	//int dcpu;
 
 	pe = b->arg;
-	dcpu = b->result;
+	//dcpu = b->result;
 	CPU_ZERO(&mask);
 	CPU_SET(pe->dcpu,&mask);
 #if defined(__freebsd__)
