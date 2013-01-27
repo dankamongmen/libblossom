@@ -26,13 +26,13 @@ LFLAGS+=-Wl,-O1,--no-undefined-version,--enable-new-dtags,--as-needed,--warn-com
 CTAGS?=$(shell (which ctags || echo ctags) 2> /dev/null)
 XSLTPROC?=$(shell (which xsltproc || echo xsltproc) 2> /dev/null)
 INSTALL?=install -v
-PREFIX?=/usr/local
+DESTDIR?=/usr/local
 ifeq ($(UNAME),FreeBSD)
-DOCPREFIX?=$(PREFIX)/man
+DOCDESTDIR?=$(DESTDIR)/man
 MANBIN?=makewhatis
 LDCONFIG?=ldconfig -m
 else
-DOCPREFIX?=$(PREFIX)/share/man
+DOCDESTDIR?=$(DESTDIR)/share/man
 MANBIN?=mandb
 LDCONFIG?=ldconfig
 endif
@@ -77,14 +77,14 @@ clean:
 	rm -rf $(OUT)
 
 install: all doc
-	@mkdir -p $(PREFIX)/lib
-	$(INSTALL) -m 0644 $(realpath $(LIB)) $(PREFIX)/lib
-	@mkdir -p $(PREFIX)/include
-	@$(INSTALL) -m 0644 $(wildcard $(SRC)/lib$(PROJ)/*.h) $(PREFIX)/include
-	@mkdir -p $(DOCPREFIX)/man3
-	@$(INSTALL) -m 0644 $(MAN3) $(DOCPREFIX)/man3
-	@echo "Running $(LDCONFIG) $(PREFIX)/lib..." && $(LDCONFIG) $(PREFIX)/lib
-	@echo "Running $(MANBIN) $(DOCPREFIX)..." && $(MANBIN) $(DOCPREFIX)
+	@mkdir -p $(DESTDIR)/lib
+	$(INSTALL) -m 0644 $(realpath $(LIB)) $(DESTDIR)/lib
+	@mkdir -p $(DESTDIR)/include
+	@$(INSTALL) -m 0644 $(wildcard $(SRC)/lib$(PROJ)/*.h) $(DESTDIR)/include
+	@mkdir -p $(DOCDESTDIR)/man3
+	@$(INSTALL) -m 0644 $(MAN3) $(DOCDESTDIR)/man3
+	@echo "Running $(LDCONFIG) $(DESTDIR)/lib..." && $(LDCONFIG) $(DESTDIR)/lib
+	@echo "Running $(MANBIN) $(DOCDESTDIR)..." && $(MANBIN) $(DOCDESTDIR)
 
 
 uninstall:
