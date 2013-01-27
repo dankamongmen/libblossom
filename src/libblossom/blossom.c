@@ -363,3 +363,11 @@ int blossom_on_pe(const blossom_ctl *ctl,blossom_state *ctx,const pthread_attr_t
 	}
 	return errno;
 }
+
+int blossom_join_all(blossom_state *bs){
+	if((bs->joinvals = malloc(sizeof(*bs->joinvals) * bs->tidcount)) == NULL){
+		return -1;
+	}
+	// FIXME
+	return 0;
+}

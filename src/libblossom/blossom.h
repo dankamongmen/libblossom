@@ -17,6 +17,7 @@ extern "C" {
 // library. In the meantime, these values can be used to control threads.
 typedef struct blossom_state {
 	pthread_t *tids;
+	void *joinvals;
 	unsigned tidcount;
 } blossom_state;
 
@@ -28,7 +29,7 @@ typedef enum {
 	// returned in this case (though it is safe to do so); the
 	// blossom_state structure will be zeroed out. No threads run the
 	// argument function until all threads have been spawned.
-	BLOSSOM_JOIN_ON_FAILURE,
+	BLOSSOM_JOIN_ON_FAILURE = 0,
 
 	// Return an error on any failure, but go ahead and continue
 	// attemting to spawn up through the desired number of threads.
@@ -59,6 +60,13 @@ int blossom_on_pe(const blossom_ctl *,blossom_state *,const pthread_attr_t *,
 			void *(*)(void *) __attribute__ ((nonnull)),void *)
 	__attribute__ ((visibility ("default")))
 	__attribute__ ((warn_unused_result));
+
+// Join on all spawned threads, in unspecified order. Thread exit values will
+// be stored in the joinvals array. If there is an error attempting to join any
+// thread, error will be returned, but we will continue attempting to join on
+// the other threads. Zero means all were joined successfully; it does not make
+// any statement about the values within joinvals.
+int blossom_join_all(blossom_state *) __attribute__ ((visibility ("default")));
 
 // Free up the resources held in the blossom_state, though this does not
 // perform any joining operation on the threads themselves.
