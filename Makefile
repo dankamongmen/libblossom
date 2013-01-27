@@ -20,9 +20,9 @@ BIN_LFLAGS+=-L$(dir $(LIBBLOSSOM)) -l$(PROJ)
 LIB:=$(LIBBLOSSOM)
 BIN:=$(BLOSSOMTEST)
 
-CFLAGS+=-pthread -D_GNU_SOURCE -fpic -I$(SRC)/lib$(PROJ) -fvisibility=hidden -O2 -Wall -W -Werror
+OCFLAGS:=$(CFLAGS) -pthread -D_GNU_SOURCE -fpic -I$(SRC)/lib$(PROJ) -fvisibility=hidden -O2 -Wall -W -Werror
 # Would use --default-symver, but gold doesn't know it
-LFLAGS+=-Wl,-O1,--no-undefined-version,--enable-new-dtags,--as-needed,--warn-common
+LFLAGS:=$(LFLAGS) -Wl,-O1,--no-undefined-version,--enable-new-dtags,--as-needed,--warn-common
 CTAGS?=$(shell (which ctags || echo ctags) 2> /dev/null)
 XSLTPROC?=$(shell (which xsltproc || echo xsltproc) 2> /dev/null)
 INSTALL?=install -v
@@ -53,15 +53,15 @@ test: all
 
 $(OUT)/%: $(OUT)/%.o $(LIB)
 	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS) $(BIN_LFLAGS)
+	$(CC) $(OCFLAGS) -o $@ $^ $(LFLAGS) $(BIN_LFLAGS)
 
 $(OUT)/libblossom/lib%.so: $(OUT)/libblossom/%.o
 	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) -shared -o $@ $^ $(LFLAGS)
+	$(CC) $(OCFLAGS) -shared -o $@ $^ $(LFLAGS)
 
 $(OUT)/%.o: $(SRC)/%.c $(wildcard $(SRC)/lib$(PROJ)/*.h)
 	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(OCFLAGS) -c -o $@ $<
 
 # Should the network be inaccessible, and local copies are installed, try:
 #DOC2MANXSL?=--nonet
