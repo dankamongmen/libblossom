@@ -1,6 +1,6 @@
 .DELTE_ON_ERROR:
 .DEFAULT_GOAL:=test
-.PHONY: all bin lib doc test clean install uninstall
+.PHONY: all bin lib doc test clean install uninstall sysinstall
 
 VERSION=0.99.0
 
@@ -83,6 +83,8 @@ install: all doc
 	@$(INSTALL) -m 0644 $(wildcard $(SRC)/lib$(PROJ)/*.h) $(DESTDIR)/include
 	@mkdir -p $(DOCDESTDIR)/man3
 	@$(INSTALL) -m 0644 $(MAN3) $(DOCDESTDIR)/man3
+
+sysinstall: install
 	@echo "Running $(LDCONFIG) $(DESTDIR)/lib..." && $(LDCONFIG) $(DESTDIR)/lib
 	@echo "Running $(MANBIN) $(DOCDESTDIR)..." && $(MANBIN) $(DOCDESTDIR)
 
