@@ -203,6 +203,7 @@ blossom_thread(void *unsafeb){
 
 void blossom_free_state(blossom_state *ctx){
 	if(ctx){
+		free(ctx->joinvals);
 		free(ctx->tids);
 		ctx->tids = NULL;
 		ctx->tidcount = 0;
@@ -259,6 +260,7 @@ int blossom_pthreads(const blossom_ctl *ctl,blossom_state *ctx,const pthread_att
 			void *(*fxn)(void *),void *arg){
 	int ret;
 
+	ctx->joinvals = NULL;
 	ctx->tidcount = ctl->tids;
 	if( (ret = blossom_n_threads(ctx,attr,fxn,arg,blossom_thread)) ){
 		return ret;
@@ -274,6 +276,7 @@ int blossom_per_pe(const blossom_ctl *ctl,blossom_state *ctx,const pthread_attr_
 	if((cpucount = portable_cpuset_count()) == 0){
 		return errno;
 	}
+	ctx->joinvals = NULL;
 	ctx->tidcount = ctl->tids * cpucount; // FIXME check for overflow
 	if( (ret = blossom_n_threads(ctx,attr,fxn,arg,blossom_thread)) ){
 		blossom_free_state(ctx);
@@ -322,6 +325,7 @@ int blossom_on_pe(const blossom_ctl *ctl,blossom_state *ctx,const pthread_attr_t
 	unsigned cpu;
 	int ret;
 
+	ctx->joinvals = NULL;
 	ctx->tidcount = 0;
 	ctx->tids = NULL;
 #if defined(__freebsd__)
