@@ -21,16 +21,15 @@ do_bloom(const blossom_ctl *ctl,int (*fxn)(const blossom_ctl *,blossom_state *,c
 				ret,strerror(ret));
 		return -1;
 	}
+	if( (ret = blossom_join_all(ctx)) ){
+		fprintf(stderr,"blossom_join_all returned %d (%s)\n",
+				ret,strerror(ret));
+		return -1;
+	}
 	for(z = 0 ; z < ctx->tidcount ; ++z){
-		void *rarg;
-
-		if( (ret = pthread_join(ctx->tids[z],&rarg)) ){
-			fprintf(stderr,"pthread_join returned %d (%s)\n",
-					ret,strerror(ret));
-			return -1;
-		}
-		if(arg != rarg){
-			fprintf(stderr,"pthread_join provided value %p, wanted %p\n",rarg,arg);
+		if(arg != ctx->joinvals[z]){
+			fprintf(stderr,"pthread_join provided value %p, wanted %p\n",
+					ctx->joinvals[z],arg);
 			return -1;
 		}
 		printf("Joined %u (Verified argument (%p))\n",z,arg);

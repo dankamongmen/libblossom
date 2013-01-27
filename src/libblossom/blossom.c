@@ -369,9 +369,17 @@ int blossom_on_pe(const blossom_ctl *ctl,blossom_state *ctx,const pthread_attr_t
 }
 
 int blossom_join_all(blossom_state *bs){
-	if((bs->joinvals = malloc(sizeof(*bs->joinvals) * bs->tidcount)) == NULL){
+	unsigned z = bs->tidcount;
+	int r = 0;
+
+	if(z == 0){
 		return -1;
 	}
-	// FIXME
-	return 0;
+	if((bs->joinvals = malloc(sizeof(*bs->joinvals) * z)) == NULL){
+		return -1;
+	}
+	while(z--){
+		r |= pthread_join(bs->tids[z],bs->joinvals + z);
+	}
+	return r;
 }

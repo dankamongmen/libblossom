@@ -17,7 +17,7 @@ extern "C" {
 // library. In the meantime, these values can be used to control threads.
 typedef struct blossom_state {
 	pthread_t *tids;
-	void *joinvals;
+	void **joinvals;
 	unsigned tidcount;
 } blossom_state;
 
