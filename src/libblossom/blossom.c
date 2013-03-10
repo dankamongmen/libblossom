@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <string.h>
 #include <pthread.h>
 #include <blossom.h>
 
@@ -378,8 +379,21 @@ int blossom_join_all(blossom_state *bs){
 	if((bs->joinvals = malloc(sizeof(*bs->joinvals) * z)) == NULL){
 		return -1;
 	}
+	// zero out the array so validate_joinrets() will fail if we failed
+	memset(bs->joinvals,0,sizeof(*bs->joinvals) * z);
 	while(z--){
 		r |= pthread_join(bs->tids[z],bs->joinvals + z);
 	}
 	return r;
+}
+
+int blossom_validate_joinrets(blossom_state *bs){
+	unsigned z;
+
+	for(z = 0 ; z < bs->tidcount ; ++z){
+		if(!bs->joinvals[z]){
+			return -1;
+		}
+	}
+	return 0;
 }

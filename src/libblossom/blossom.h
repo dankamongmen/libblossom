@@ -73,6 +73,10 @@ int blossom_join_all(blossom_state *) __attribute__ ((visibility ("default")));
 void blossom_free_state(blossom_state *)
 	__attribute__ ((visibility ("default")));
 
+// Convenience function to check the joinvals array. 0 on no NULL values.
+int blossom_validate_joinrets(blossom_state *)
+	__attribute__ ((visibility ("default")));
+
 #ifdef __cplusplus
 }
 #endif
