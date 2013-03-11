@@ -2,8 +2,6 @@
 .DEFAULT_GOAL:=test
 .PHONY: all bin lib doc test clean install uninstall sysinstall
 
-VERSION=0.99.0
-
 OUT:=out
 SRC:=src
 DOC:=doc
