@@ -28,7 +28,7 @@
 <!-- SECTION should be 1-8, maybe w/ subsection other          -->
 <!-- parameters are allowed: see man(7), man(1) and            -->
 <!-- http://www.tldp.org/HOWTO/Man-Page/q2.html.               -->
-<!ENTITY dhsection   "3blossom">
+<!ENTITY dhsection   "3">
 
 ]>
 
