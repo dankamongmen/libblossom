@@ -13,7 +13,7 @@ doc_DATA+=README
 
 LIBS+=$(PTHREAD_LIBS)
 
-check_PROGRAMS=blossomtester
+check_PROGRAMS=blossomtest
 
 dist_man_MANS = blossom.3
 
@@ -24,8 +24,11 @@ include_HEADERS=src/libblossom/blossom.h
 lib_LTLIBRARIES=libblossom.la
 libblossom_la_SOURCES=src/libblossom/blossom.c
 
-blossomtester_SOURCES=src/bin/blossomtester.c
-blossomtester_LDADD=libblossom.la
+blossomtest_SOURCES=src/blossomtest/blossomtest.c
+blossomtest_LDADD=libblossom.la
+
+check: blossomtest
+	./$^
 
 %.3: $(doc_DIR)/man/man3/%.xml $(doc_DIR)/@PACKAGE_NAME@.ent
 	$(XSLTPROC) --path $(doc_DIR) -o $@ --nonet /usr/share/xml/docbook/stylesheet/docbook-xsl/manpages/docbook.xsl $<
