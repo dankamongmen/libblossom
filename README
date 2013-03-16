@@ -8,6 +8,8 @@ number of threads can be spawned, or a number per processing element.
 BUILDING
 --------
 
+If building from a git checkout, run 'autoreconf -fis'.
+
 Run 'make all'. GNU make is required.
 
 INSTALLING
