@@ -63,7 +63,7 @@
 	</refnamediv>
 	<refsynopsisdiv>
 		<funcsynopsis>
-			<funcsynopsisinfo>#include &lt;libblossom/blossom.h&gt;</funcsynopsisinfo>
+			<funcsynopsisinfo>#include &lt;blossom.h&gt;</funcsynopsisinfo>
 			<funcprototype>
 			<funcdef>int <function>blossom_pthreads</function></funcdef>
 			<paramdef>unsigned <parameter>tids</parameter></paramdef>
@@ -94,6 +94,12 @@
 			<paramdef>void *(*<parameter>fxn</parameter>)
 				<funcparams>void *</funcparams></paramdef>
 			<paramdef>void *<parameter>arg</parameter></paramdef>
+			</funcprototype>
+		</funcsynopsis>
+		<funcsynopsis>
+			<funcprototype>
+			<funcdef>int <function>blossom_validate_joinrets</function></funcdef>
+			<paramdef>blossom_state *<parameter>ctx</parameter></paramdef>
 			</funcprototype>
 		</funcsynopsis>
 		<funcsynopsis>
