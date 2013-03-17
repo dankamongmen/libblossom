@@ -48,7 +48,8 @@ int blossom_pthreads(const blossom_ctl *,blossom_state *,const pthread_attr_t *,
 	__attribute__ ((warn_unused_result));
 
 // Bloom tidcount threads per processing element. Any creation failure is a
-// failure throughout.
+// failure throughout. If we are already a blossom, this is turned into
+// blossom_per_pe(1), so as not to exponentially grow the number of threads.
 int blossom_per_pe(const blossom_ctl *,blossom_state *,const pthread_attr_t *,
 			void *(*)(void *) __attribute__ ((nonnull)),void *)
 	__attribute__ ((visibility ("default")))

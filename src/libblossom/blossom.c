@@ -15,6 +15,8 @@ typedef cpuset_t cpu_set_t;
 #error "Need cpu_set_t definition for this platform" // solaris is psetid_t
 #endif
 
+static __thread unsigned blossomthread = 0;
+
 // FreeBSD's cpuset.h (as of 7.2) doesn't provide CPU_COUNT, nor do older
 // Linux setups (including RHEL5). This requires only CPU_{SETSIZE,ISSET}.
 static inline unsigned
@@ -145,7 +147,9 @@ mark_bloom_success(blossom *b){
 	if(pthread_mutex_lock(&b->mutex)){
 		return -1;
 	}
-	b->result = BLOOM_SUCCESS;
+	if(b->result == BLOOM_INITIALIZED){
+		b->result = BLOOM_SUCCESS;
+	}
 	pthread_cond_signal(&b->cond);
 	pthread_mutex_unlock(&b->mutex);
 	return 0;
@@ -300,6 +304,7 @@ blossom_pe_thread(void *unsafeb){
 	void *arg;
 	//int dcpu;
 
+	blossomthread = 1; // Don't blossom from this thread
 	pe = b->arg;
 	//dcpu = b->result;
 	CPU_ZERO(&mask);
@@ -353,11 +358,19 @@ int blossom_on_pe(const blossom_ctl *ctl,blossom_state *ctx,const pthread_attr_t
 					blossom_free_state(ctx);
 					return errno;
 				}
-				ctx->tids = tmp;
-				for(z = 0 ; z < ctl->tids ; ++z){
-					if( (ret = blossom_1_thread(ctx->tidcount,ctx,attr,fxn,
+				if(blossomthread == 0){
+					ctx->tids = tmp;
+					for(z = 0 ; z < ctl->tids ; ++z){
+						if( (ret = blossom_1_thread(ctx->tidcount,ctx,attr,fxn,
 								&curry,blossom_pe_thread)) ){
-						// FIXME reap backward
+							// FIXME reap backward
+							return ret;
+						}
+						++ctx->tidcount;
+					}
+				}else{
+					if( (ret = blossom_1_thread(ctx->tidcount,ctx,attr,fxn,
+							&curry,blossom_pe_thread)) ){
 						return ret;
 					}
 					++ctx->tidcount;
