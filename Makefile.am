@@ -1,3 +1,5 @@
+.DELETE_ON_ERROR:
+
 LANG=C
 LC_ALL=c
 
@@ -10,6 +12,9 @@ AM_CPPFLAGS=-I $(SRCDIR)/src/lib
 doc_DIR=doc
 doc_DATA=
 doc_DATA+=README
+
+pkgconfigdir=${libdir}/pkgconfig
+nodist_pkgconfig_DATA=libblossom.pc
 
 LIBS+=$(PTHREAD_LIBS)
 
@@ -29,6 +34,11 @@ blossomtest_LDADD=libblossom.la
 
 check: blossomtest
 	./$^
+
+%.pc: %.pc.in
+	sed -e 's@#PREFIX#@${prefix}@' \
+		-e 's@#VERSION#@${VERSION}@' \
+		< $< > $@
 
 %.3: $(doc_DIR)/man/man3/%.xml $(doc_DIR)/@PACKAGE_NAME@.ent
 	$(XSLTPROC) --path $(doc_DIR) -o $@ --nonet /usr/share/xml/docbook/stylesheet/docbook-xsl/manpages/docbook.xsl $<

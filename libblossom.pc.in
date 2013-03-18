@@ -4,7 +4,7 @@ includedir=${prefix}/include
 
 Name: libblossom
 Description: Parallel thread creation
-Version:#VERSION#
+Version: #VERSION#
 URL: http://dank.qemfd.net/dankwiki/index.php/Libblossom
 Libs: -L${libdir} -lblossom
 Cflags: -I${includedir}
