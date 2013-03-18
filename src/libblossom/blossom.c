@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
-#include <blossom.h>
+#include "blossom.h"
 
 #if defined(__linux__)
 #include <sched.h>
