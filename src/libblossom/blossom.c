@@ -2,6 +2,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include <pthread.h>
 #include "blossom.h"
 
@@ -15,6 +16,11 @@ typedef cpuset_t cpu_set_t;
 #error "Need cpu_set_t definition for this platform" // solaris is psetid_t
 #endif
 
+// We don't want hierarchies of blossoms, which could quickly overwhelm the
+// system. This isn't a complete solution, though, because it removes an
+// expected degree of parallelism entirely (and doesn't prevent hierarchies
+// of blossoms if they're separated by a non-blossom, anyway). More thought
+// is needed. FIXME
 static __thread unsigned blossomthread = 0;
 
 // FreeBSD's cpuset.h (as of 7.2) doesn't provide CPU_COUNT, nor do older
@@ -161,6 +167,7 @@ blossom_thread(void *unsafeb){
 	void *(*fxn)(void *);
 	void *arg;
 
+	blossomthread = 1;
 	if(idx_left(b->idx) < b->ctx->tidcount){
 		blossom *bl;
 
@@ -253,6 +260,7 @@ blossom_n_threads(blossom_state *ctx,const pthread_attr_t *attr,
 	if((ctx->tids = create_tid_state(ctx->tidcount)) == NULL){
 		return errno;
 	}
+	memset(ctx->tids,0,sizeof(*ctx->tids) * ctx->tidcount);
 	if( (ret = blossom_1_thread(0,ctx,attr,fxn,arg,blfxn)) ){
 		blossom_free_state(ctx);
 		return ret;
@@ -275,17 +283,26 @@ int blossom_pthreads(const blossom_ctl *ctl,blossom_state *ctx,const pthread_att
 
 int blossom_per_pe(const blossom_ctl *ctl,blossom_state *ctx,const pthread_attr_t *attr,
 			void *(*fxn)(void *),void *arg){
-	unsigned cpucount;
 	int ret;
 
-	if((cpucount = portable_cpuset_count()) == 0){
-		return errno;
-	}
 	ctx->joinvals = NULL;
-	ctx->tidcount = ctl->tids * cpucount; // FIXME check for overflow
-	if( (ret = blossom_n_threads(ctx,attr,fxn,arg,blossom_thread)) ){
-		blossom_free_state(ctx);
-		return ret;
+	if(blossomthread == 0){
+		unsigned cpucount;
+
+		if((cpucount = portable_cpuset_count()) == 0){
+			return errno;
+		}
+		ctx->tidcount = ctl->tids * cpucount; // FIXME check for overflow
+		if( (ret = blossom_n_threads(ctx,attr,fxn,arg,blossom_thread)) ){
+			blossom_free_state(ctx);
+			return ret;
+		}
+	}else{
+		ctx->tidcount = 1;
+		if( (ret = blossom_n_threads(ctx,attr,fxn,arg,blossom_thread)) ){
+			blossom_free_state(ctx);
+			return ret;
+		}
 	}
 	return 0;
 }
@@ -358,8 +375,8 @@ int blossom_on_pe(const blossom_ctl *ctl,blossom_state *ctx,const pthread_attr_t
 					blossom_free_state(ctx);
 					return errno;
 				}
+				ctx->tids = tmp;
 				if(blossomthread == 0){
-					ctx->tids = tmp;
 					for(z = 0 ; z < ctl->tids ; ++z){
 						if( (ret = blossom_1_thread(ctx->tidcount,ctx,attr,fxn,
 								&curry,blossom_pe_thread)) ){
@@ -396,6 +413,9 @@ int blossom_join_all(blossom_state *bs){
 	memset(bs->joinvals,0,sizeof(*bs->joinvals) * z);
 	while(z--){
 		r |= pthread_join(bs->tids[z],bs->joinvals + z);
+		if(r){
+			return -1;
+		}
 	}
 	return r;
 }
