@@ -17,11 +17,13 @@ depcomp
 doc/libblossom.ent
 install-sh
 libblossom.la
+libblossom.pc
 libtool
 ltmain.sh
 m4/
 missing
 src/bin/
+src/blossomtest/.deps/
 src/libblossom/.deps/
 src/libblossom/.dirstamp
 src/libblossom/.libs/
