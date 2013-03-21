@@ -1,5 +1,5 @@
 AC_PREREQ([2.61])
-AC_INIT([libblossom], [1.2.2], [sprezzos-dev@sprezzatech.com], [libblossom], [https://nick-black.com/dankwiki/index.php/Libblossom])
+AC_INIT([libblossom], [1.3.0], [sprezzos-dev@sprezzatech.com], [libblossom], [https://nick-black.com/dankwiki/index.php/Libblossom])
 AC_CONFIG_AUX_DIR([.])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign dist-xz std-options subdir-objects nostdinc color-tests])
 AC_CONFIG_SRCDIR([src/libblossom/blossom.h])
