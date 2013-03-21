@@ -68,7 +68,12 @@ typedef struct blossom {
 
 static inline pthread_t *
 create_tid_state(unsigned z){
-	return malloc(sizeof(pthread_t) * z);
+	pthread_t *tids;
+
+	if( (tids = malloc(sizeof(*tids) * z)) ){
+		memset(tids,0,sizeof(*tids) * z);
+	}
+	return tids;
 }
 
 static blossom *
@@ -260,7 +265,6 @@ blossom_n_threads(blossom_state *ctx,const pthread_attr_t *attr,
 	if((ctx->tids = create_tid_state(ctx->tidcount)) == NULL){
 		return errno;
 	}
-	memset(ctx->tids,0,sizeof(*ctx->tids) * ctx->tidcount);
 	if( (ret = blossom_1_thread(0,ctx,attr,fxn,arg,blfxn)) ){
 		blossom_free_state(ctx);
 		return ret;
@@ -298,11 +302,19 @@ int blossom_per_pe(const blossom_ctl *ctl,blossom_state *ctx,const pthread_attr_
 			return ret;
 		}
 	}else{
+		// There's no point in launching a single thread. Run it
+		// ourselves, and stash the return value away. Look for
+		// blossomthread != 0 in joinall() and specialcase it.
 		ctx->tidcount = 1;
-		if( (ret = blossom_n_threads(ctx,attr,fxn,arg,blossom_thread)) ){
+		ctx->tids = NULL;
+		if((ctx->joinvals = malloc(sizeof(*ctx->joinvals))) == NULL){
+			return -1;
+		}
+		ctx->joinvals[0] = fxn(arg);
+		/*if( (ret = blossom_n_threads(ctx,attr,fxn,arg,blossom_thread)) ){
 			blossom_free_state(ctx);
 			return ret;
-		}
+		}*/
 	}
 	return 0;
 }
@@ -405,6 +417,11 @@ int blossom_join_all(blossom_state *bs){
 
 	if(z == 0){
 		return -1;
+	}
+	// Special-case; if we prohibited a blossom, we directly executed the
+	// function, and have already set up joinrets.
+	if(blossomthread){
+		return 0;
 	}
 	if((bs->joinvals = malloc(sizeof(*bs->joinvals) * z)) == NULL){
 		return -1;
