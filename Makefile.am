@@ -35,7 +35,7 @@ blossomtest_LDADD=libblossom.la
 check: blossomtest
 	./$^
 
-%.pc: %.pc.in
+%.pc: %.pc.in configure.ac
 	sed -e 's@#PREFIX#@${prefix}@' \
 		-e 's@#VERSION#@${VERSION}@' \
 		< $< > $@
@@ -51,7 +51,7 @@ $(doc_DIR)/@PACKAGE_NAME@.ent:
 	echo -e '<!ENTITY dhfirstname "Nick">\n<!ENTITY dhsurname "Black">\n<!ENTITY dhemail "nick.black@sprezzatech.com">\n<!ENTITY dhusername "&dhfirstname; &dhsurname;">\n<!ENTITY dhrelease "$(VERSION)">' > "$@"
 
 clean-local:
-	rm -rf $(MANS) $(doc_DIR)/@PACKAGE_NAME@.ent
+	rm -rf $(MANS) $(doc_DIR)/@PACKAGE_NAME@.ent $(nodist_pkgconfig_DATA)
 
 uninstall-local:
 	rmdir "$(DESTDIR)$(docdir)"
