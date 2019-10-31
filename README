@@ -10,6 +10,8 @@ number of threads can be spawned, or a number per processing element.
 BUILDING
 --------
 
+A C compiler, autotools, and xsltproc are required.
+
 If building from a git checkout, run 'autoreconf -fis'.
 
 Run 'make all'. GNU make is required.
