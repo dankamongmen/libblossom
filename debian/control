@@ -13,7 +13,7 @@ Package: libblossom-dev
 Section: libdevel
 Architecture: any
 Multi-Arch: same
-Depends: libblossom0 (= ${binary:Version}), ${misc:Depends}
+Depends: libblossom1 (= ${binary:Version}), ${misc:Depends}
 Description: Extremely parallel thread spawning (development)
  Many processes need to spawn some fixed number of threads on
  M of N compute units, where 1 <= M <= N. It is best to do this
@@ -22,7 +22,7 @@ Description: Extremely parallel thread spawning (development)
  .
  This package contains the development files for using libblossom.
 
-Package: libblossom0
+Package: libblossom1
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends}, ${misc:Depends}

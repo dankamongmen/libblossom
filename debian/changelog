@@ -1,3 +1,9 @@
+libblossom (1.4.0-2) unstable; urgency=medium
+
+  * Correct libblossom0 -> libblossom1, fixing missing libraries
+
+ -- Nick Black <dankamongmen@gmail.com>  Thu, 31 Oct 2019 16:16:52 -0400
+
 libblossom (1.4.0-1) unstable; urgency=medium
 
   * Move documents to Markdown
