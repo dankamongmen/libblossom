@@ -1,0 +1,32 @@
+Source: libblossom
+Priority: optional
+Maintainer: Nick Black <dankamongmen@gmail.com>
+Build-Depends: debhelper-compat (= 12)
+Standards-Version: 4.4.1.1
+Section: libs
+Homepage: https://nick-black.com/dankwiki/index.php/Libblossom
+Vcs-Git: https://github.com/dankamongmen/libblossom.git
+#Vcs-Browser: https://salsa.debian.org/debian/libblossom
+
+Package: libblossom-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Depends: libblossom0 (= ${binary:Version}), ${misc:Depends}
+Description: Extremely parallel thread spawning (development)
+ Many processes need to spawn some fixed number of threads on
+ M of N compute units, where 1 <= M <= N. It is best to do this
+ spawning along a frontier to maximize parallel resources during
+ the spawning process itself.
+ .
+ This package contains the development files for using libblossom.
+
+Package: libblossom0
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Extremely parallel thread spawning
+ Many processes need to spawn some fixed number of threads on
+ M of N compute units, where 1 <= M <= N. It is best to do this
+ spawning along a frontier to maximize parallel resources during
+ the spawning process itself.
