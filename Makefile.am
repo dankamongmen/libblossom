@@ -7,7 +7,7 @@ AM_CFLAGS=-O2 -Wall -W -Wshadow -Werror -Wextra -fvisibility=hidden \
 	  	  	$(PTHREAD_CFLAGS)
 AM_LDFLAGS=-Wl,-O2,--no-undefined-version,--enable-new-dtags,--as-needed,--warn-common
 AM_CC=$(PTHREAD_CC)
-AM_CPPFLAGS=-I $(SRCDIR)/src/lib
+AM_CPPFLAGS=-I $(SRCDIR)/src/libblossom
 
 doc_DIR=doc
 doc_DATA=
