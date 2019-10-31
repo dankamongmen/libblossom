@@ -11,7 +11,7 @@ AM_CPPFLAGS=-I $(SRCDIR)/src/lib
 
 doc_DIR=doc
 doc_DATA=
-doc_DATA+=README
+doc_DATA+=README.md
 
 pkgconfigdir=${libdir}/pkgconfig
 nodist_pkgconfig_DATA=libblossom.pc

@@ -1,3 +1,10 @@
+libblossom (1.4.0-1) unstable; urgency=medium
+
+  * Move documents to Markdown
+  * Add autobuilding support via Drone
+
+ -- Nick Black <dankamongmen@gmail.com>  Thu, 31 Oct 2019 15:18:15 -0400
+
 libblossom (1.3.0-1) unstable; urgency=medium
 
   * Initial release
