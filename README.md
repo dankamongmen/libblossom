@@ -1,4 +1,4 @@
-# libblossom -- extremely parallel thread spawning
+# libblossom—extremely parallel thread spawning
 
 [![Build Status](https://drone.dsscaw.com:4443/api/badges/dankamongmen/libblossom/status.svg)](https://drone.dsscaw.com:4443/dankamongmen/libblossom)
 
