@@ -1,9 +1,9 @@
 Source: libblossom
 Priority: optional
 Maintainer: Nick Black <dankamongmen@gmail.com>
-Build-Depends: debhelper-compat (= 12), xsltproc, autoconf-archive,
+Build-Depends: debhelper-compat (>= 13), xsltproc, autoconf-archive,
  docbook-xsl
-Standards-Version: 4.4.1.1
+Standards-Version: 4.5.1
 Section: libs
 Homepage: https://nick-black.com/dankwiki/index.php/Libblossom
 Vcs-Git: https://github.com/dankamongmen/libblossom.git
